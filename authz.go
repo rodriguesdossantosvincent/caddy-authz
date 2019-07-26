@@ -9,6 +9,7 @@ import (
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/casbin/casbin"
 	jwt "github.com/dgrijalva/jwt-go"
+	jwtcaddy "github.com/BTBurke/caddy-jwt"
 )
 
 /* ************************************************************************** */
@@ -140,12 +141,9 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 // GetUserName gets the user name from the request.
 // Currently, only HTTP basic authentication is supported
 func (a *Authorizer) GetUserName(r *http.Request) string {
-	utoken, err := ExtractToken(r)
-	var vToken *jwt.Token
-	vToken, err = ValidateToken(uToken, &NoopKeyBackend{})
-	vClaims, err := Flatten(vToken.Claims.(jwt.MapClaims), "", DotStyle)
-	fmt.Println("username")
-	fmt.Println(username)
+	uToken, err := ExtractToken(r)
+	fmt.Println("uToken")
+	fmt.Println(uToken)
 	return username
 }
 
@@ -174,11 +172,11 @@ func ExtractToken(r *http.Request) (string, error) {
 	return "", fmt.Errorf("no token found")
 }
 
-func ValidateToken(uToken string, keyBackend KeyBackend) (*jwt.Token, error) {
+func ValidateToken(uToken string, keyBackend jwtcaddy.keys.KeyBackend) (*jwt.Token, error) {
 	if len(uToken) == 0 {
 		return nil, fmt.Errorf("Token length is zero")
 	}
-	token, err := jwt.Parse(uToken, keyBackend.ProvideKey)
+	token, err := jwt.Parse(uToken, jwtcaddy.keyBackend.ProvideKey)
 
 	if err != nil {
 		return nil, err
