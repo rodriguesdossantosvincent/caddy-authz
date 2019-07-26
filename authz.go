@@ -151,7 +151,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	if err != nil || vToken == nil {
 		return "", fmt.Errorf("ValidateToken error")
 	}
-	return vToken.Claims["foo"].(string), nil
+	return vToken.Claims["sub"].(string), nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
@@ -183,12 +183,28 @@ func ExtractToken(r *http.Request) (string, error) {
 	return "", fmt.Errorf("no token found")
 }
 
+
+type UserInfo struct {
+	Sub       string   `json:"sub"`
+	Picture   string   `json:"picture,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Email     string   `json:"email,omitempty"`
+	Origin    string   `json:"origin,omitempty"`
+	Expiry    int64    `json:"exp,omitempty"`
+	Refreshes int      `json:"refs,omitempty"`
+	Domain    string   `json:"domain,omitempty"`
+	Groups    []string `json:"groups,omitempty"`
+}
+type UserClaims interface {
+	Claims(userInfo UserInfo) (jwt.Claims, error)
+}
+
 func ValidateToken(uToken string) (*jwt.Token, error) {
 	if len(uToken) == 0 {
 		return nil, fmt.Errorf("Token length is zero")
 	}
 	parser:= new(jwt.Parser)
-	token, parts, err := parser.ParseUnverified(uToken, jwt.StandardClaims{})
+	token, parts, err := parser.ParseUnverified(uToken, &UserClaims{})
 
 	if err != nil {
 		return nil, err
