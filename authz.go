@@ -180,7 +180,7 @@ func ValidateToken(uToken string) (*jwt.Token, error) {
 		return nil, fmt.Errorf("Token length is zero")
 	}
 	parser:= new(jwt.Parser)
-	token, err := parser.ParseUnverified(uToken)
+	token, err := parser.ParseUnverified(uToken, jwt.MapClaims{})
 
 	if err != nil {
 		return nil, err
