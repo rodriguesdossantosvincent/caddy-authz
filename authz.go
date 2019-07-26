@@ -141,20 +141,33 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 // GetUserName gets the user name from the request.
 // Currently, only HTTP basic authentication is supported
 func (a *Authorizer) GetUserName(r *http.Request) string {
-	uToken, _ := ExtractToken(r)
-	fmt.Println("uToken")
-	fmt.Println(uToken)
+	uToken, err := ExtractToken(r)
+	if err != nil {
+		return "", nil
+	}
+
 	var vToken *jwt.Token
-	vToken, _ = ValidateToken(uToken)
-	fmt.Println("vToken")
-	fmt.Println(vToken)
-	return uToken
+	vToken, err = ValidateToken(uToken)
+	if err != nil || vToken == nil {
+		return "", nil
+	}
+
+	vClaims, err := jwt.Flatten(vToken.Claims.(jwt.MapClaims), "", DotStyle)
+	fmt.Println("vClaims")
+	fmt.Println(vClaims)
+	if err != nil {
+		return "", nil
+
+	return vClaims[sub], ""
 }
 
 // CheckPermission checks the user/method/path combination from the request.
 // Returns true (permission granted) or false (permission forbidden)
 func (a *Authorizer) CheckPermission(r *http.Request) bool {
-	user := a.GetUserName(r)
+	user, err := a.GetUserName(r)
+	if err == nil {
+		return false
+	}
 	method := r.Method
 	path := r.URL.Path
 	return a.Enforcer.Enforce(user, path, method)
@@ -164,11 +177,9 @@ func (a *Authorizer) CheckPermission(r *http.Request) bool {
 
 func ExtractToken(r *http.Request) (string, error) {
 	effectiveTss := DefaultTokenSources
-	fmt.Println("ExtractToken")
 	for _, tss := range effectiveTss {
 		token := tss.ExtractToken(r)
 		if token != "" {
-			fmt.Println(token)
 			return token, nil
 		}
 	}
@@ -182,7 +193,6 @@ func ValidateToken(uToken string) (*jwt.Token, error) {
 	}
 	parser:= new(jwt.Parser)
 	token, parts, err := parser.ParseUnverified(uToken, jwt.MapClaims{})
-	fmt.Println(parts)
 
 	if err != nil {
 		return nil, err
