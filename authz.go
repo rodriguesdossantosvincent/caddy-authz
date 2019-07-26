@@ -152,8 +152,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 		return "", fmt.Errorf("ValidateToken error")
 	}
 
-	flatten:= new(jwtcaddy.Flatten)
-	vClaims, err := flatten.Flatten(vToken.Claims.(jwt.MapClaims), "", flatten.DotStyle)
+	vClaims, err := jwtcaddy.Flatten(vToken.Claims.(jwt.MapClaims), "", jwtcaddy.DotStyle)
 	if err != nil {
 		return "", fmt.Errorf("vClaims error")
 	}
