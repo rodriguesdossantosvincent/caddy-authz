@@ -140,7 +140,7 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 
 // GetUserName gets the user name from the request.
 // Currently, only HTTP basic authentication is supported
-func GetUserName(r *http.Request) string {
+func (a *Authorizer) GetUserName(r *http.Request) string {
 	uToken, err := ExtractToken(r)
 	if err != nil {
 		return "", nil
@@ -157,17 +157,20 @@ func GetUserName(r *http.Request) string {
 	fmt.Println(vClaims)
 	if err != nil {
 		return "", nil
-
-	return vClaims[sub], ""
+	}
+	return vClaims["sub"], ""
 }
 
 // CheckPermission checks the user/method/path combination from the request.
 // Returns true (permission granted) or false (permission forbidden)
 func (a *Authorizer) CheckPermission(r *http.Request) bool {
 	user, err := a.GetUserName(r)
+	fmt.Println("user")
+	fmt.Println(user)
 	if err == nil {
 		user = "guest"
 	}
+	fmt.Println(user)
 	method := r.Method
 	path := r.URL.Path
 	return a.Enforcer.Enforce(user, path, method)
