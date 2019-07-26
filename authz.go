@@ -166,7 +166,7 @@ func (a *Authorizer) GetUserName(r *http.Request) string {
 func (a *Authorizer) CheckPermission(r *http.Request) bool {
 	user, err := a.GetUserName(r)
 	if err == nil {
-		return false
+		return false, nil
 	}
 	method := r.Method
 	path := r.URL.Path
