@@ -1,12 +1,112 @@
 package authz
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/caddyserver/caddy"
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/casbin/casbin"
+	jwt "github.com/dgrijalva/jwt-go"
 )
+
+/* ************************************************************************** */
+/* Extraction JWT */
+
+type TokenSource interface {
+	// If the returned string is empty, the token was not found.
+	// So far any implementation does not return errors.
+	ExtractToken(r *http.Request) string
+}
+
+// Extracts a token from the Authorization header in the form `Bearer <JWT Token>`
+type HeaderTokenSource struct {
+	HeaderName string
+}
+
+func (hts *HeaderTokenSource) ExtractToken(r *http.Request) string {
+	jwtHeader := strings.Split(r.Header.Get("Authorization"), " ")
+	if jwtHeader[0] == hts.HeaderName && len(jwtHeader) == 2 {
+		return jwtHeader[1]
+	}
+	return ""
+}
+
+// Extracts a token from a cookie named `CookieName`.
+type CookieTokenSource struct {
+	CookieName string
+}
+
+func (cts *CookieTokenSource) ExtractToken(r *http.Request) string {
+	jwtCookie, err := r.Cookie(cts.CookieName)
+	if err == nil {
+		return jwtCookie.Value
+	}
+	return ""
+}
+
+// Extracts a token from a URL query parameter of the form https://example.com?ParamName=<JWT token>
+type QueryTokenSource struct {
+	ParamName string
+}
+
+func (qts *QueryTokenSource) ExtractToken(r *http.Request) string {
+	jwtQuery := r.URL.Query().Get(qts.ParamName)
+	if jwtQuery != "" {
+		return jwtQuery
+	}
+	return ""
+}
+
+var (
+	// Default TokenSources to be applied in the given order if the
+	// user did not explicitly configure them via the token_source option
+	DefaultTokenSources = []TokenSource{
+		&HeaderTokenSource{
+			HeaderName: "Bearer",
+		},
+		&CookieTokenSource{
+			CookieName: "jwt_token",
+		},
+		&QueryTokenSource{
+			ParamName: "token",
+		},
+	}
+)
+
+func ExtractToken(r *http.Request) (string, error) {
+	effectiveTss = DefaultTokenSources
+	fmt.Println("ExtractToken")
+	for _, tss := range effectiveTss {
+		token := tss.ExtractToken(r)
+		if token != "" {
+			fmt.Println(token)
+			return token, nil
+		}
+	}
+
+	return "", fmt.Errorf("no token found")
+}
+
+// ValidateToken will return a parsed token if it passes validation, or an
+// error if any part of the token fails validation.  Possible errors include
+// malformed tokens, unknown/unspecified signing algorithms, missing secret key,
+// tokens that are not valid yet (i.e., 'nbf' field), tokens that are expired,
+// and tokens that fail signature verification (forged)
+func ValidateToken(uToken string, keyBackend KeyBackend) (*jwt.Token, error) {
+	if len(uToken) == 0 {
+		return nil, fmt.Errorf("Token length is zero")
+	}
+	token, err := jwt.Parse(uToken, keyBackend.ProvideKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
+}
+/* ************************************************************************** */
 
 // Authorizer is a middleware for filtering clients based on their ip or country's ISO code.
 type Authorizer struct {
@@ -72,7 +172,9 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 // GetUserName gets the user name from the request.
 // Currently, only HTTP basic authentication is supported
 func (a *Authorizer) GetUserName(r *http.Request) string {
-	username, _, _ := r.BasicAuth()
+	username, _ := ExtractToken(r)
+	fmt.Println("username")
+	fmt.Println(username)
 	return username
 }
 
