@@ -144,7 +144,8 @@ func (a *Authorizer) GetUserName(r *http.Request) string {
 	uToken, err := ExtractToken(r)
 	fmt.Println("uToken")
 	fmt.Println(uToken)
-	vToken, err := ValidateToken(uToken)
+	var vToken *jwt.Token
+	vToken, err = ValidateToken(uToken)
 	fmt.Println("vToken")
 	fmt.Println(vToken)
 	return vToken
