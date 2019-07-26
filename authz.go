@@ -74,20 +74,6 @@ var (
 		},
 	}
 )
-
-func ExtractToken(r *http.Request) (string, error) {
-	effectiveTss := DefaultTokenSources
-	fmt.Println("ExtractToken")
-	for _, tss := range effectiveTss {
-		token := tss.ExtractToken(r)
-		if token != "" {
-			fmt.Println(token)
-			return token, nil
-		}
-	}
-
-	return "", fmt.Errorf("no token found")
-}
 /* ************************************************************************** */
 
 // Authorizer is a middleware for filtering clients based on their ip or country's ISO code.
@@ -154,7 +140,10 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 // GetUserName gets the user name from the request.
 // Currently, only HTTP basic authentication is supported
 func (a *Authorizer) GetUserName(r *http.Request) string {
-	username, _ := ExtractToken(r)
+	utoken, err := ExtractToken(r)
+	var vToken *jwt.Token
+	vToken, err = ValidateToken(uToken, &NoopKeyBackend{})
+	vClaims, err := Flatten(vToken.Claims.(jwt.MapClaims), "", DotStyle)
 	fmt.Println("username")
 	fmt.Println(username)
 	return username
@@ -167,4 +156,33 @@ func (a *Authorizer) CheckPermission(r *http.Request) bool {
 	method := r.Method
 	path := r.URL.Path
 	return a.Enforcer.Enforce(user, path, method)
+}
+
+
+
+func ExtractToken(r *http.Request) (string, error) {
+	effectiveTss := DefaultTokenSources
+	fmt.Println("ExtractToken")
+	for _, tss := range effectiveTss {
+		token := tss.ExtractToken(r)
+		if token != "" {
+			fmt.Println(token)
+			return token, nil
+		}
+	}
+
+	return "", fmt.Errorf("no token found")
+}
+
+func ValidateToken(uToken string, keyBackend KeyBackend) (*jwt.Token, error) {
+	if len(uToken) == 0 {
+		return nil, fmt.Errorf("Token length is zero")
+	}
+	token, err := jwt.Parse(uToken, keyBackend.ProvideKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
 }
