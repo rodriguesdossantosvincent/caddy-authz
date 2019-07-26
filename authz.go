@@ -172,11 +172,11 @@ func ExtractToken(r *http.Request) (string, error) {
 	return "", fmt.Errorf("no token found")
 }
 
-func ValidateToken(uToken string, keyBackend jwtcaddy.keys.KeyBackend) (*jwt.Token, error) {
+func ValidateToken(uToken string) (*jwt.Token, error) {
 	if len(uToken) == 0 {
 		return nil, fmt.Errorf("Token length is zero")
 	}
-	token, err := jwt.Parse(uToken, jwtcaddy.keyBackend.ProvideKey)
+	token, err := jwt.ParseUnverified(uToken)
 
 	if err != nil {
 		return nil, err
