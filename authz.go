@@ -148,7 +148,7 @@ func (a *Authorizer) GetUserName(r *http.Request) string {
 	vToken, err = ValidateToken(uToken)
 	fmt.Println("vToken")
 	fmt.Println(vToken)
-	return vToken
+	return uToken
 }
 
 // CheckPermission checks the user/method/path combination from the request.
