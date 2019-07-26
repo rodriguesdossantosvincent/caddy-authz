@@ -151,7 +151,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	if err != nil || vToken == nil {
 		return "", fmt.Errorf("ValidateToken error")
 	}
-	return uToken.Claims.(jwt.MapClaims)["Subject"], nil
+	return vToken.Claims["foo"].(string), nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
@@ -188,7 +188,7 @@ func ValidateToken(uToken string) (*jwt.Token, error) {
 		return nil, fmt.Errorf("Token length is zero")
 	}
 	parser:= new(jwt.Parser)
-	token, parts, err := parser.ParseUnverified(uToken, jwt.MapClaims{})
+	token, parts, err := parser.ParseUnverified(uToken, jwt.StandardClaims{})
 
 	if err != nil {
 		return nil, err
