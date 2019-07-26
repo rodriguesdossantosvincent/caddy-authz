@@ -151,14 +151,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	if err != nil || vToken == nil {
 		return "", fmt.Errorf("ValidateToken error")
 	}
-
-	vClaims, err := jwtcaddy.Flatten(vToken.Claims.(jwt.MapClaims), "", jwtcaddy.DotStyle)
-	if err != nil {
-		return "", fmt.Errorf("vClaims error")
-	}
-	fmt.Println("vClaims")
-	fmt.Println(vClaims)
-	return vClaims.sub, nil
+	return vToken.Claims.sub, nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
