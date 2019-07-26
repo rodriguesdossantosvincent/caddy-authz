@@ -140,24 +140,24 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 
 // GetUserName gets the user name from the request.
 // Currently, only HTTP basic authentication is supported
-func (a *Authorizer) GetUserName(r *http.Request) string {
+func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	uToken, err := ExtractToken(r)
 	if err != nil {
-		return "", nil
+		return nil
 	}
 
 	var vToken *jwt.Token
 	vToken, err = ValidateToken(uToken)
 	if err != nil || vToken == nil {
-		return "", nil
+		return "", fmt.Errorf("ValidateToken error")
 	}
 
 	vClaims, err := jwt.Flatten(vToken.Claims.(jwt.MapClaims), "", DotStyle)
+	if err != nil {
+		return "", fmt.Errorf("vClaims error")
+	}
 	fmt.Println("vClaims")
 	fmt.Println(vClaims)
-	if err != nil {
-		return "", nil
-	}
 	return vClaims["sub"], ""
 }
 
@@ -167,7 +167,7 @@ func (a *Authorizer) CheckPermission(r *http.Request) bool {
 	user, err := a.GetUserName(r)
 	fmt.Println("user")
 	fmt.Println(user)
-	if err == nil {
+	if err != nil {
 		user = "guest"
 	}
 	fmt.Println(user)
