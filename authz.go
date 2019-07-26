@@ -151,7 +151,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	if err != nil || vToken == nil {
 		return "", fmt.Errorf("ValidateToken error")
 	}
-	return vToken.Claims.sub, nil
+	return vToken.Claims.Subject, nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
