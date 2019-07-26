@@ -76,7 +76,7 @@ var (
 )
 
 func ExtractToken(r *http.Request) (string, error) {
-	effectiveTss = DefaultTokenSources
+	effectiveTss := DefaultTokenSources
 	fmt.Println("ExtractToken")
 	for _, tss := range effectiveTss {
 		token := tss.ExtractToken(r)
@@ -87,24 +87,6 @@ func ExtractToken(r *http.Request) (string, error) {
 	}
 
 	return "", fmt.Errorf("no token found")
-}
-
-// ValidateToken will return a parsed token if it passes validation, or an
-// error if any part of the token fails validation.  Possible errors include
-// malformed tokens, unknown/unspecified signing algorithms, missing secret key,
-// tokens that are not valid yet (i.e., 'nbf' field), tokens that are expired,
-// and tokens that fail signature verification (forged)
-func ValidateToken(uToken string, keyBackend KeyBackend) (*jwt.Token, error) {
-	if len(uToken) == 0 {
-		return nil, fmt.Errorf("Token length is zero")
-	}
-	token, err := jwt.Parse(uToken, keyBackend.ProvideKey)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 /* ************************************************************************** */
 
