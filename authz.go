@@ -143,7 +143,7 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	uToken, err := ExtractToken(r)
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("ExtractToken error")
 	}
 
 	var vToken *jwt.Token
@@ -152,13 +152,14 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 		return "", fmt.Errorf("ValidateToken error")
 	}
 
-	vClaims, err := jwt.Flatten(vToken.Claims.(jwt.MapClaims), "", DotStyle)
+	flatten:= new(jwt.Flatten)
+	vClaims, err := flatten.Flatten(vToken.Claims.(jwt.MapClaims), "", DotStyle)
 	if err != nil {
 		return "", fmt.Errorf("vClaims error")
 	}
 	fmt.Println("vClaims")
 	fmt.Println(vClaims)
-	return vClaims["sub"], ""
+	return vClaims["sub"], nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
