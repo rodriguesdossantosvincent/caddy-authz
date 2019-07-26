@@ -158,7 +158,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	}
 	fmt.Println("vClaims")
 	fmt.Println(vClaims)
-	return vClaims[sub], nil
+	return vClaims.sub, nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
