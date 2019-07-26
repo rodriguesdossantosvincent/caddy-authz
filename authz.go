@@ -9,7 +9,7 @@ import (
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/casbin/casbin"
 	jwt "github.com/dgrijalva/jwt-go"
-	//jwtcaddy "github.com/BTBurke/caddy-jwt"
+	jwtcaddy "github.com/BTBurke/caddy-jwt"
 )
 
 /* ************************************************************************** */
@@ -143,7 +143,7 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	uToken, err := ExtractToken(r)
 	if err != nil {
-		return nil, fmt.Errorf("ExtractToken error")
+		return "", fmt.Errorf("ExtractToken error")
 	}
 
 	var vToken *jwt.Token
@@ -152,8 +152,8 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 		return "", fmt.Errorf("ValidateToken error")
 	}
 
-	flatten:= new(jwt.Flatten)
-	vClaims, err := flatten.Flatten(vToken.Claims.(jwt.MapClaims), "", DotStyle)
+	flatten:= new(jwtcaddy.Flatten)
+	vClaims, err := flatten.Flatten(vToken.Claims.(jwt.MapClaims), "", flatten.DotStyle)
 	if err != nil {
 		return "", fmt.Errorf("vClaims error")
 	}
