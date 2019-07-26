@@ -166,11 +166,12 @@ func (a *Authorizer) GetUserName(r *http.Request) string {
 func (a *Authorizer) CheckPermission(r *http.Request) bool {
 	user, err := a.GetUserName(r)
 	if err == nil {
-		return false, nil
+		return false
+	} else {
+		method := r.Method
+		path := r.URL.Path
+		return a.Enforcer.Enforce(user, path, method)
 	}
-	method := r.Method
-	path := r.URL.Path
-	return a.Enforcer.Enforce(user, path, method)
 }
 
 
