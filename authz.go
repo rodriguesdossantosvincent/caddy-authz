@@ -9,7 +9,7 @@ import (
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/casbin/casbin"
 	jwt "github.com/dgrijalva/jwt-go"
-	jwtcaddy "github.com/BTBurke/caddy-jwt"
+	//jwtcaddy "github.com/BTBurke/caddy-jwt"
 )
 
 /* ************************************************************************** */
@@ -144,7 +144,10 @@ func (a *Authorizer) GetUserName(r *http.Request) string {
 	uToken, err := ExtractToken(r)
 	fmt.Println("uToken")
 	fmt.Println(uToken)
-	return uToken
+	vToken, err := ValidateToken(uToken)
+	fmt.Println("vToken")
+	fmt.Println(vToken)
+	return vToken
 }
 
 // CheckPermission checks the user/method/path combination from the request.
@@ -176,7 +179,8 @@ func ValidateToken(uToken string) (*jwt.Token, error) {
 	if len(uToken) == 0 {
 		return nil, fmt.Errorf("Token length is zero")
 	}
-	token, err := jwt.ParseUnverified(uToken)
+	parser:= new(jwt.Parser)
+	token, err := parser.ParseUnverified(uToken)
 
 	if err != nil {
 		return nil, err
