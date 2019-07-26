@@ -140,7 +140,7 @@ func (a Authorizer) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, erro
 
 // GetUserName gets the user name from the request.
 // Currently, only HTTP basic authentication is supported
-func (a *Authorizer) GetUserName(r *http.Request) string {
+func GetUserName(r *http.Request) string {
 	uToken, err := ExtractToken(r)
 	if err != nil {
 		return "", nil
