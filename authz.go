@@ -9,7 +9,7 @@ import (
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/casbin/casbin"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/rodriguesdossantosvincent/loginsrv/model"
+	"github.com/rodriguesdossantosvincent/loginsrv/model@v1.3.1.7"
 	jwtcaddy "github.com/BTBurke/caddy-jwt"
 )
 
