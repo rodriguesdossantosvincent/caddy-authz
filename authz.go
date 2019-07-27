@@ -9,6 +9,7 @@ import (
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/casbin/casbin"
 	jwt "github.com/dgrijalva/jwt-go"
+	model "github.com/dgrijalva/jwt-go/model"
 	jwtcaddy "github.com/BTBurke/caddy-jwt"
 )
 
@@ -151,7 +152,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	if err != nil || vToken == nil {
 		return "", fmt.Errorf("ValidateToken error")
 	}
-	claims, _ := vToken.Claims.(*jwt.model.UserInfo)
+	claims, _ := vToken.Claims.(*model.UserInfo)
 	return claims["sub"].(string), nil
 }
 
@@ -189,7 +190,7 @@ func ValidateToken(uToken string) (*jwt.Token, error) {
 		return nil, fmt.Errorf("Token length is zero")
 	}
 	parser:= new(jwt.Parser)
-	token, parts, err := parser.ParseUnverified(uToken, &jwt.model.UserInfo{})
+	token, parts, err := parser.ParseUnverified(uToken, &model.UserInfo{})
 
 	if err != nil {
 		return nil, err
