@@ -242,7 +242,7 @@ func ValidateToken(uToken string) (*jwt.Token, error) {
 		return nil, fmt.Errorf("Token length is zero")
 	}
 	parser:= new(jwt.Parser)
-	token, parts, err := parser.ParseUnverified(uToken, &UserInfo{})
+	token, _, err := parser.ParseUnverified(uToken, &UserInfo{})
 
 	if err != nil {
 		return nil, err
