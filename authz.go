@@ -10,7 +10,6 @@ import (
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/casbin/casbin"
 	jwt "github.com/dgrijalva/jwt-go"
-	jwtcaddy "github.com/BTBurke/caddy-jwt"
 )
 
 /* ************************************************************************** */
