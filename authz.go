@@ -9,7 +9,6 @@ import (
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/casbin/casbin"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/rodriguesdossantosvincent/loginsrv/model@v1.3.1.7"
 	jwtcaddy "github.com/BTBurke/caddy-jwt"
 )
 
@@ -76,6 +75,59 @@ var (
 		},
 	}
 )
+
+type UserInfo struct {
+	Sub       string   `json:"sub"`
+	Picture   string   `json:"picture,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Email     string   `json:"email,omitempty"`
+	Origin    string   `json:"origin,omitempty"`
+	Expiry    int64    `json:"exp,omitempty"`
+	Refreshes int      `json:"refs,omitempty"`
+	Domain    string   `json:"domain,omitempty"`
+	Groups    []string `json:"groups,omitempty"`
+}
+
+// Valid lets us use the user info as Claim for jwt-go.
+// It checks the token expiry.
+func (u UserInfo) Valid() error {
+	if u.Expiry < time.Now().Unix() {
+		return errors.New("token expired")
+	}
+	return nil
+}
+
+func (u UserInfo) AsMap() map[string]interface{} {
+	m := map[string]interface{}{
+		"sub": u.Sub,
+	}
+	if u.Picture != "" {
+		m["picture"] = u.Picture
+	}
+	if u.Name != "" {
+		m["name"] = u.Name
+	}
+	if u.Email != "" {
+		m["email"] = u.Email
+	}
+	if u.Origin != "" {
+		m["origin"] = u.Origin
+	}
+	if u.Expiry != 0 {
+		m["exp"] = u.Expiry
+	}
+	if u.Refreshes != 0 {
+		m["refs"] = u.Refreshes
+	}
+	if u.Domain != "" {
+		m["domain"] = u.Domain
+	}
+	if len(u.Groups) > 0 {
+		m["groups"] = u.Groups
+	}
+	return m
+}
+
 /* ************************************************************************** */
 
 // Authorizer is a middleware for filtering clients based on their ip or country's ISO code.
@@ -152,7 +204,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	if err != nil || vToken == nil {
 		return "", fmt.Errorf("ValidateToken error")
 	}
-	claims, _ := vToken.Claims.(*model.UserInfo)
+	claims, _ := vToken.Claims.(*UserInfo)
 	return claims["sub"].(string), nil
 }
 
@@ -190,7 +242,7 @@ func ValidateToken(uToken string) (*jwt.Token, error) {
 		return nil, fmt.Errorf("Token length is zero")
 	}
 	parser:= new(jwt.Parser)
-	token, parts, err := parser.ParseUnverified(uToken, &model.UserInfo{})
+	token, parts, err := parser.ParseUnverified(uToken, &UserInfo{})
 
 	if err != nil {
 		return nil, err
