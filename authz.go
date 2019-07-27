@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/caddyserver/caddy"
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
@@ -85,7 +86,7 @@ type UserInfo struct {
 	Expiry    int64    `json:"exp,omitempty"`
 	Refreshes int      `json:"refs,omitempty"`
 	Domain    string   `json:"domain,omitempty"`
-	Groups    []string `json:"groups,omitempty"`
+	Groups    []string `json:"groups,omitempty"`	
 }
 
 // Valid lets us use the user info as Claim for jwt-go.
