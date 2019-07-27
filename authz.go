@@ -205,7 +205,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 		return "", fmt.Errorf("ValidateToken error")
 	}
 	claims, _ := vToken.Claims.(*UserInfo)
-	return claimsAsMap()["sub"].(string), nil
+	return claims.AsMap()["sub"].(string), nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
