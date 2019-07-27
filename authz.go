@@ -92,7 +92,7 @@ type UserInfo struct {
 // It checks the token expiry.
 func (u UserInfo) Valid() error {
 	if u.Expiry < time.Now().Unix() {
-		return errors.New("token expired")
+		return fmt.Errorf("token expired")
 	}
 	return nil
 }
@@ -205,7 +205,7 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 		return "", fmt.Errorf("ValidateToken error")
 	}
 	claims, _ := vToken.Claims.(*UserInfo)
-	return claims.AsMap()["sub"].(string), nil
+	return claims.AsMap()["sub"], nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
