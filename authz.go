@@ -151,7 +151,8 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 	if err != nil || vToken == nil {
 		return "", fmt.Errorf("ValidateToken error")
 	}
-	return vToken.Claims["sub"].(string), nil
+	claims, _ := vToken.Claims.(*jwt.model.UserInfo)
+	return claims["sub"].(string), nil
 }
 
 // CheckPermission checks the user/method/path combination from the request.
@@ -170,7 +171,6 @@ func (a *Authorizer) CheckPermission(r *http.Request) bool {
 }
 
 
-
 func ExtractToken(r *http.Request) (string, error) {
 	effectiveTss := DefaultTokenSources
 	for _, tss := range effectiveTss {
@@ -184,27 +184,12 @@ func ExtractToken(r *http.Request) (string, error) {
 }
 
 
-type UserInfo struct {
-	Sub       string   `json:"sub"`
-	Picture   string   `json:"picture,omitempty"`
-	Name      string   `json:"name,omitempty"`
-	Email     string   `json:"email,omitempty"`
-	Origin    string   `json:"origin,omitempty"`
-	Expiry    int64    `json:"exp,omitempty"`
-	Refreshes int      `json:"refs,omitempty"`
-	Domain    string   `json:"domain,omitempty"`
-	Groups    []string `json:"groups,omitempty"`
-}
-type UserClaims interface {
-	Claims(userInfo UserInfo) (jwt.Claims, error)
-}
-
 func ValidateToken(uToken string) (*jwt.Token, error) {
 	if len(uToken) == 0 {
 		return nil, fmt.Errorf("Token length is zero")
 	}
 	parser:= new(jwt.Parser)
-	token, parts, err := parser.ParseUnverified(uToken, UserClaims{})
+	token, parts, err := parser.ParseUnverified(uToken, &jwt.model.UserInfo{})
 
 	if err != nil {
 		return nil, err
