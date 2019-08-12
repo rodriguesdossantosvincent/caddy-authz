@@ -212,12 +212,9 @@ func (a *Authorizer) GetUserName(r *http.Request) (string, error) {
 // Returns true (permission granted) or false (permission forbidden)
 func (a *Authorizer) CheckPermission(r *http.Request) bool {
 	user, err := a.GetUserName(r)
-	fmt.Println("user")
-	fmt.Println(user)
 	if err != nil {
 		user = "guest"
 	}
-	fmt.Println(user)
 	method := r.Method
 	path := r.URL.Path
 	return a.Enforcer.Enforce(user, path, method)
